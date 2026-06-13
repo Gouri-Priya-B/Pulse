@@ -1,93 +1,62 @@
-# =====================================================================
-# PULSE Daily Summary Bot
-# Fetches: Live weather (wttr.in) & Motivational quote (ZenQuotes)
-# Runs automatically every single morning at 8:00 AM IST via GitHub Actions
-# =====================================================================
-
 import requests
 from datetime import date
 
+# FUNCTION 1: Weather Fetcher
 def get_weather(city="Thiruvananthapuram"):
-    """Fetches today's weather as a clean one-line text summary."""
+    """Fetch today's weather as a one-line text summary."""
     try:
         url = f"https://wttr.in/{city}?format=3"
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         return response.text.strip()
     except Exception as e:
-        return "Weather unavailable :("
+        return "Weather unavailable ( ¯\_(ツ)_/¯ )"
 
-
-
+# FUNCTION 2: Quote Fetcher
 def get_quote():
-    """Fetches a random motivational quote from ZenQuotes."""
+    """Fetch a random motivational quote from ZenQuotes."""
     try:
         url = "https://zenquotes.io/api/random"
         response = requests.get(url, timeout=10)
         response.raise_for_status()
-        
         data = response.json()
         quote = data[0]["q"]
         author = data[0]["a"]
-        return f'"{quote}" - {author}'
+        return f'"{quote}" — {author}'
     except Exception as e:
-        return "Quote unavailable :("       
+        return "Quote unavailable ( ¯\_(ツ)_/¯ )"
 
-
+# FUNCTION 3: Assembler
 def build_summary():
-    """Combines all external elements into a formatted layout block."""
-    today = date.today().strftime("%B %d, %Y")
+    """Assemble the full daily summary from all data sources."""
+    today = date.today().strftime("%A, %B %d, %Y")
     weather = get_weather()
     quote = get_quote()
     
     summary = f"""
-=========================================
 PULSE Daily Summary
-Date: {today}
-=========================================
-
-WEATHER REPORT:
+{today}
+----------------------------------------
+WEATHER
 {weather}
 
-TODAY'S MOTIVATION:
+TODAY'S QUOTE
 {quote}
-
-=========================================
+----------------------------------------
 """
     return summary
 
-def build_summary():
-    """Combines all external elements into a formatted layout block."""
-    today = date.today().strftime("%B %d, %Y")
-    weather = get_weather()
-    quote = get_quote()
-    
-    summary = f"""
-=========================================
-PULSE Daily Summary
-Date: {today}
-=========================================
-
-WEATHER REPORT:
-{weather}
-
-TODAY'S MOTIVATION:
-{quote}
-
-=========================================
-"""
-    return summary
-
-
+# FUNCTION 4: Execution Hub
 def run():
-    """Coordinates execution: builds summary, logs it, and writes the artifact file."""
+    """Main entry point called by GitHub Actions."""
     summary = build_summary()
     print(summary)
     
+    # Save to a text file
     with open("daily_summary.txt", "w", encoding="utf-8") as f:
         f.write(summary)
         
-    print("Pulse executed successfully.")
+    print("Pulse ran successfully.")
 
 if __name__ == "__main__":
     run()
